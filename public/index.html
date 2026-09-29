@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión de Pacientes</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a href="#main" class="skip-link">Saltar al contenido principal</a>
+  
+  <header class="header">
+    <h1>Pacientes</h1>
+  </header>
+
+  <main class="main" id="main">
+    <section class="search-section" aria-label="Búsqueda de pacientes">
+      <label for="search-input" class="visually-hidden">Buscar paciente por nombre</label>
+      <input
+        type="search"
+        id="search-input"
+        class="search-input"
+        placeholder="Buscar paciente..."
+        autocomplete="off"
+        aria-describedby="search-hint"
+      >
+      <span id="search-hint" class="visually-hidden">Escribe para filtrar la lista en tiempo real</span>
+    </section>
+
+    <div class="content">
+      <section class="list-section" aria-label="Lista de pacientes">
+        <h2 class="section-title">Lista</h2>
+        <ul id="patient-list" class="patient-list" role="listbox" aria-label="Pacientes"></ul>
+        <p id="no-results" class="no-results hidden" aria-live="polite">No se encontraron pacientes</p>
+      </section>
+
+      <section class="detail-section" aria-label="Detalle del paciente">
+        <h2 class="section-title">Detalle</h2>
+        <div id="patient-detail" class="patient-detail" aria-live="polite">
+          <p class="detail-placeholder">Selecciona un paciente para ver su información</p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>API de Pacientes - Demo</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
