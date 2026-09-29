@@ -23,3 +23,9 @@ test("returns an existing patient", async () => {
   assert.equal(response.status, 200);
   assert.equal((await response.json()).name, "Ana García");
 });
+
+test("returns 404 for non-existent patient", async () => {
+  const response = await fetch(`${base}/api/patients/999`);
+  assert.equal(response.status, 404);
+  assert.deepEqual(await response.json(), { error: "Paciente no encontrado" });
+});
