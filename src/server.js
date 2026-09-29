@@ -22,13 +22,11 @@ const MIME_TYPES = {
 
 function getCacheControl(pathname) {
   const ext = extname(pathname).toLowerCase();
-  // HTML: no cache, assets: long cache (assuming hashed filenames in future)
   if (ext === ".html") return "no-cache, no-store, must-revalidate";
   return "public, max-age=31536000, immutable";
 }
 
 async function serveStatic(req, res, pathname) {
-  // Prevent directory traversal
   const safePath = join(PUBLIC_DIR, pathname);
   if (!safePath.startsWith(PUBLIC_DIR)) {
     res.writeHead(403);
@@ -39,55 +37,67 @@ async function serveStatic(req, res, pathname) {
   try {
     const stats = await stat(safePath);
     if (!stats.isFile()) {
-      return false; // Not a file, let caller handle
+      return false;
     }
 
     const content = await readFile(safePath);
     const ext = extname(safePath).toLowerCase();
     const contentType = MIME_TYPES[ext] || "application/octet-stream";
-    
+
     res.writeHead(200, {
       "Content-Type": contentType,
       "Cache-Control": getCacheControl(pathname),
-      "ETag": `W/"${stats.size}-${stats.mtimeMs}"`,
+      ETag: `W/"${stats.size}-${stats.mtimeMs}"`,
       "Last-Modified": stats.mtime.toUTCString(),
     });
     res.end(content);
     return true;
   } catch (err) {
     if (err.code === "ENOENT") {
-      return false; // Not found, let caller handle
+      return false;
     }
     throw err;
   }
 }
 
-const port = Number(process.env.PORT ?? 3000);
-createServer(async (req, res) => {
-  const url = new URL(req.url, `http://${req.headers.host}`);
-  const pathname = url.pathname;
+function createHttpServer() {
+  return createServer(async (req, res) => {
+    const url = new URL(req.url, `http://${req.headers.host}`);
+    const pathname = url.pathname;
 
-  // API routes - delegate to existing handler
-  if (pathname.startsWith("/api/")) {
-    return handler(req, res);
-  }
+    if (pathname.startsWith("/api/")) {
+      return handler(req, res);
+    }
 
-  // Root path serves index.html
-  if (pathname === "/" || pathname === "") {
-    const served = await serveStatic(req, res, "index.html");
+    if (pathname === "/" || pathname === "") {
+      const served = await serveStatic(req, res, "index.html");
+      if (!served) {
+        res.writeHead(404);
+        res.end("Not Found");
+      }
+      return;
+    }
+
+    const served = await serveStatic(req, res, pathname.slice(1));
     if (!served) {
       res.writeHead(404);
       res.end("Not Found");
     }
-    return;
-  }
+  });
+}
 
-  // Other static files
-  const served = await serveStatic(req, res, pathname.slice(1));
-  if (!served) {
-    res.writeHead(404);
-    res.end("Not Found");
-  }
-}).listen(port, () => {
+async function startServer(port = Number(process.env.PORT ?? 3000)) {
+  const server = createHttpServer();
+  await new Promise((resolve) => server.listen(port, resolve));
   console.log(`Patients API listening on ${port}`);
-});
+  return server;
+}
+
+if (import.meta.url === `file://${process.argv[1]}`) {
+  startServer().catch((err) => {
+    console.error("Failed to start server:", err);
+    process.exit(1);
+  });
+}
+
+export { createHttpServer, startServer };

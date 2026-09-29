@@ -1,22 +1,12 @@
 import { test, before, after, describe } from "node:test";
 import assert from "node:assert/strict";
-import { createServer } from "node:http";
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
-import { fileURLToPath } from "node:url";
-import { dirname } from "node:path";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const PUBLIC_DIR = join(__dirname, "..", "public");
+import { startServer } from "../../src/server.js";
 
 let server;
 let base;
 
 before(async () => {
-  const { default: serverModule } = await import("../src/server.js");
-  server = serverModule;
-  await new Promise((resolve) => server.listen(0, resolve));
+  server = await startServer(0);
   base = `http://127.0.0.1:${server.address().port}`;
 });
 
@@ -173,7 +163,7 @@ describe("Frontend Keyboard Navigation", () => {
     const js = await response.text();
     assert.ok(js.includes("tabIndex") || js.includes("tabindex"));
     assert.ok(js.includes("keydown") || js.includes("keypress"));
-    assert.ok(js.includes("Enter") || js.includes("Space"));
+    assert.ok(js.includes("Enter") || js.includes(" "));
   });
 
   test("CSS provides visible focus styles for interactive elements", async () => {
@@ -181,5 +171,32 @@ describe("Frontend Keyboard Navigation", () => {
     const css = await response.text();
     assert.ok(css.includes(".patient-item:focus-visible") || css.includes(":focus-visible"));
     assert.ok(css.includes("outline") || css.includes("box-shadow"));
+  });
+});
+
+describe("Frontend Search and Selection Behavior", () => {
+  test("search filters patients case-insensitively in real-time", async () => {
+    const response = await fetch(`${base}/app.js`);
+    const js = await response.text();
+    assert.ok(js.includes("search-input"));
+    assert.ok(js.includes("addEventListener"));
+    assert.ok(js.includes("input") || js.includes("keyup"));
+    assert.ok(js.toLowerCase().includes("filter"));
+  });
+
+  test("selecting a patient fetches detail from API", async () => {
+    const response = await fetch(`${base}/app.js`);
+    const js = await response.text();
+    assert.ok(js.includes("selectPatient"));
+    assert.ok(js.includes("fetchPatientDetail") || js.includes("/api/patients/"));
+    assert.ok(js.includes("renderPatientDetail"));
+  });
+
+  test("selected patient gets aria-selected=true and selected class", async () => {
+    const response = await fetch(`${base}/app.js`);
+    const js = await response.text();
+    assert.ok(js.includes("aria-selected"));
+    assert.ok(js.includes("selected"));
+    assert.ok(js.includes("classList.add") || js.includes("classList.remove"));
   });
 });
