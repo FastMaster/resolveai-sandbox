@@ -1,6 +1,6 @@
 import { createServer } from "node:http";
 import { handler } from "./app.js";
-import { readFile } from "node:fs/promises";
+import { readFile, stat } from "node:fs/promises";
 import { join, extname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { dirname } from "node:path";
@@ -20,6 +20,13 @@ const MIME_TYPES = {
   ".ico": "image/x-icon",
 };
 
+function getCacheControl(pathname) {
+  const ext = extname(pathname).toLowerCase();
+  // HTML: no cache, assets: long cache (assuming hashed filenames in future)
+  if (ext === ".html") return "no-cache, no-store, must-revalidate";
+  return "public, max-age=31536000, immutable";
+}
+
 async function serveStatic(req, res, pathname) {
   // Prevent directory traversal
   const safePath = join(PUBLIC_DIR, pathname);
@@ -30,10 +37,21 @@ async function serveStatic(req, res, pathname) {
   }
 
   try {
+    const stats = await stat(safePath);
+    if (!stats.isFile()) {
+      return false; // Not a file, let caller handle
+    }
+
     const content = await readFile(safePath);
     const ext = extname(safePath).toLowerCase();
     const contentType = MIME_TYPES[ext] || "application/octet-stream";
-    res.writeHead(200, { "Content-Type": contentType });
+    
+    res.writeHead(200, {
+      "Content-Type": contentType,
+      "Cache-Control": getCacheControl(pathname),
+      "ETag": `W/"${stats.size}-${stats.mtimeMs}"`,
+      "Last-Modified": stats.mtime.toUTCString(),
+    });
     res.end(content);
     return true;
   } catch (err) {
