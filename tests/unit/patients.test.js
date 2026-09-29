@@ -9,3 +9,7 @@ test("lists patients without clinical details", () => {
 test("finds an existing patient", () => {
   assert.equal(findPatient(2).ward, "Traumatología");
 });
+
+test("returns null for non-existent patient", () => {
+  assert.equal(findPatient(999), null);
+});

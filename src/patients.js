@@ -10,5 +10,6 @@ export function listPatients() {
 
 export function findPatient(id) {
   const patient = patients.find((p) => p.id === id);
+  if (!patient) return null;
   return { id: patient.id, name: patient.name, ward: patient.ward };
 }
