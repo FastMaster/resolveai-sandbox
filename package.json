@@ -1,0 +1,17 @@
+{
+  "name": "resolveai-sandbox",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Minimal patients API used to validate the ResolveAI pipeline end to end.",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "lint": "node scripts/lint.js",
+    "compile": "node scripts/compile.js",
+    "test:unit": "node --test \"tests/unit/**/*.test.js\"",
+    "test:integration": "node --test \"tests/integration/**/*.test.js\""
+  }
+}
