@@ -2,7 +2,7 @@ const patients = [
   { id: 1, name: "Ana García", ward: "Cardiología" },
   { id: 2, name: "Luis Pérez", ward: "Traumatología" },
   { id: 3, name: "Marta Ruiz", ward: "Pediatría" },
-  { id: 4, name: "Camila Chaparro", ward: "Cardiología" },
+  { id: 4, name: "Camila Chaparro", ward: "Pediatría" },
 ];
 
 export function listPatients() {
