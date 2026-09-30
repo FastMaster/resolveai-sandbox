@@ -37,3 +37,19 @@ jobs:
         with:
           node-version: 22
       - run: npm run test:integration
+  # The web frontend in app/ (when the repository has one): install from the
+  # lock file, build and run its tests.
+  app:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Frontend (app/)
+        run: |
+          if [ ! -f app/package.json ]; then echo "No hay frontend en app/"; exit 0; fi
+          cd app
+          npm ci --ignore-scripts --no-audit --no-fund
+          npm run build
+          npm test
