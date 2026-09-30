@@ -10,9 +10,9 @@ const mockPatients: Patient[] = [
 ];
 
 describe('PatientList', () => {
-  it('renders "No se encontraron pacientes" when patients array is empty', () => {
+  it('renders \"No se encontraron pacientes\" when patients array is empty', () => {
     render(<PatientList patients={[]} />);
-    expect(screen.getByText('No se encontrados pacientes.')).toBeInTheDocument();
+    expect(screen.getByText('No se encontraron pacientes.')).toBeInTheDocument();
   });
 
   it('renders a list of patients with name, room, and ID', () => {
@@ -40,13 +40,13 @@ describe('PatientList', () => {
 
   it('handles special characters in patient names', () => {
     const patientsWithSpecialChars: Patient[] = [
-      { id: '4', name: 'José María O\'Connor', room: '201' },
+      { id: '4', name: 'José María O\\'Connor', room: '201' },
       { id: '5', name: 'François Müller', room: '202' },
     ];
 
     render(<PatientList patients={patientsWithSpecialChars} />);
 
-    expect(screen.getByText('José María O\'Connor')).toBeInTheDocument();
+    expect(screen.getByText('José María O\\'Connor')).toBeInTheDocument();
     expect(screen.getByText('François Müller')).toBeInTheDocument();
   });
 
